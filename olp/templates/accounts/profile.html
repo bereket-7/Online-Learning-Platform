@@ -1,0 +1,10 @@
+<!-- accounts/templates/accounts/profile.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Profile</h1>
+<p>Username: {{ user.username }}</p>
+<p>Email: {{ user.email }}</p>
+<!-- Add more profile details as needed -->
+{% endblock %}

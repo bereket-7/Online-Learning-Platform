@@ -25,17 +25,12 @@ SECRET_KEY = 'django-insecure-(ctbh%9x_)(u!88g@#0u)#-@e#o1pui7*!22-o0jzf0f=i1j5i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +47,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -133,8 +127,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # django-allauth
 SITE_ID = 1
 
-# django-crispy-forms
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # maildev configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -147,7 +139,6 @@ DEFAULT_FROM_EMAIL = 'email@olp.com'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 INTERNAL_IPS = [
@@ -158,3 +149,5 @@ INTERNAL_IPS = [
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
 }
+
+LOGIN_REDIRECT_URL = '/'
