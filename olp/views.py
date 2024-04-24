@@ -4,10 +4,12 @@ from django.shortcuts import redirect, render
 from django.views.generic.edit import FormView
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+
 from django.contrib.auth import login
 from django.views import View
-from .registration_form import CustomUserCreationForm 
+from .forms.registration_form import CustomUserCreationForm 
 
 
 class ProfileView(View):
@@ -43,3 +45,15 @@ class LogoutPage(LoginRequiredMixin, View):
     def get(self, request):
         logout(request)
         return redirect('home')
+    
+
+class PasswordResetRequestView(PasswordResetView):
+    template_name = 'account/password_reset_request.html'
+    success_url = reverse_lazy('password_reset_done')
+    email_template_name = 'account/password_reset_email.html'
+    form_class = PasswordResetForm
+
+class PasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'account/password_reset_confirm.html'
+    success_url = reverse_lazy('login')
+    form_class = SetPasswordForm
