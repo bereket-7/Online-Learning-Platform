@@ -1,31 +1,38 @@
 # views.py
-
-from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.shortcuts import redirect, render
+from django.views.generic.edit import FormView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.views import View
 from django.contrib.auth.models import User
-from django.contrib.auth.mixins import LoginRequiredMixin
-class HomeView():
-    template_name = 'templates/home.html'
+
+class ProfileView(View):
+    def get(self, request):
+        return render(request, 'account/profile.html')
+
+
+class HomePageView(View):
+    def get(self, request):
+        return render(request, 'home.html')
     
 class CustomLoginView(LoginView):
-    template_name = 'accounts/login.html'
-    success_url = reverse_lazy('profile')
+    template_name = 'account/login.html'
+    fields = '__all__'
+    redirect_authenticated_user = True
 
-class CustomLogoutView(LoginRequiredMixin, LogoutView):
-    template_name = 'accounts/logout.html'
-    
-class ProfileView(LoginRequiredMixin):
-    template_name = 'accounts/profile.html'
+    def get_success_url(self):
+        return reverse_lazy('profile')
 
-class SignUpView(CreateView):
-    model = User
-    template_name = 'accounts/signup.html'
-    fields = ['username', 'email', 'password']
-    success_url = reverse_lazy('login')
+class RegisterPage(FormView):
+    template_name = 'account/signup.html'
+    form_class = UserCreationForm
+    redirect_authenticated_user = True
+    success_url = reverse_lazy('register')
 
     def form_valid(self, form):
-        user = form.save(commit=False)
-        user.set_password(form.cleaned_data['password'])
-        user.save()
-        return super().form_valid(form)
+        user = form.save()
+        if user is not None:
+            login(self.request, user)
+        return super(RegisterPage, self).form_valid(form)
