@@ -8,6 +8,8 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth import login
 from django.views import View
 from .registration_form import CustomUserCreationForm 
+
+
 class ProfileView(View):
     def get(self, request):
         return render(request, 'account/profile.html')
