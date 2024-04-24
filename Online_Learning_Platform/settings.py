@@ -150,4 +150,4 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
 }
 
-LOGIN_REDIRECT_URL = '/login'
+# LOGIN_REDIRECT_URL = 'profile'
