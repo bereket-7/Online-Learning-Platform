@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+from olp.models import Profile
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=30)
@@ -19,10 +21,17 @@ class CustomUserCreationForm(UserCreationForm):
         user.email = self.cleaned_data["email"]
         user.first_name = self.cleaned_data["first_name"]
         user.last_name = self.cleaned_data["last_name"]
-        user.profile.phone = self.cleaned_data["phone"]
-        user.profile.field = self.cleaned_data["field"]
-        user.profile.photo = self.cleaned_data["photo"]
         
         if commit:
             user.save()
+            
+            # Create profile and save additional fields
+            Profile.objects.create(
+                user=user,
+                phone=self.cleaned_data["phone"],
+                field=self.cleaned_data["field"],
+                photo=self.cleaned_data["photo"]
+            )
+            
         return user
+
