@@ -11,8 +11,7 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import CustomLoginView, HomePageView, LogoutPage, PasswordResetRequestView, ProfileView, RegisterPage,PasswordResetConfirmView
-from django.contrib.auth import views as auth_views
+from .views import CustomLoginView, HomePageView, LogoutPage, PasswordResetRequestView, ProfileView, RegisterPage,PasswordResetConfirmView,ChangePasswordView
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
@@ -23,4 +22,5 @@ urlpatterns = [
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset/done/', PasswordResetRequestView.as_view(), name='password_reset_done'),
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
 ]

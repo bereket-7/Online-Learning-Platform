@@ -2,12 +2,13 @@
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic.edit import FormView
-from django.contrib.auth import logout
+
+from django.contrib.auth import logout, login,update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm
+from django.contrib.auth.views import PasswordChangeView
 
-from django.contrib.auth import login
 from django.views import View
 from .forms.registration_form import CustomUserCreationForm 
 
@@ -57,3 +58,12 @@ class PasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'account/password_reset_confirm.html'
     success_url = reverse_lazy('login')
     form_class = SetPasswordForm
+    
+class ChangePasswordView(LoginRequiredMixin, PasswordChangeView):
+    template_name = 'account/change_password.html'
+    success_url = reverse_lazy('profile')
+
+    def form_valid(self, form):
+        self.user = form.save()
+        update_session_auth_hash(self.request, self.user)
+        return super().form_valid(form)
