@@ -88,7 +88,14 @@ class Quiz(models.Model):
 
     def __str__(self):
         return self.title
-    
+class Question(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    text = models.TextField()
+    order = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.text[:50]  # Return first 50 characters of the question text
+   
     
 admin.site.register(Profile)
 admin.site.register(Permission)
