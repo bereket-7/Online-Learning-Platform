@@ -150,4 +150,5 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
 }
 
-# LOGIN_REDIRECT_URL = 'profile'
+# Custom User Model
+AUTH_USER_MODEL = 'auth.User'
