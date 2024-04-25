@@ -95,7 +95,14 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text[:50]  # Return first 50 characters of the question text
-   
+
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField()
+
+    def __str__(self):
+        return self.text
     
 admin.site.register(Profile)
 admin.site.register(Permission)
