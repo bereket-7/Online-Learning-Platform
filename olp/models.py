@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
 
+from enums import EnrollmentStatus
+
 from Online_Learning_Platform import settings
 
 
@@ -53,6 +55,20 @@ class Lessons(models.Model):
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
+
+class Enrollment(models.Model):
+    STATUS_CHOICES = [
+        (status.value, status.name) for status in EnrollmentStatus
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
+    enrollment_date = models.DateTimeField(auto_now_add=True)
+    completion_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=EnrollmentStatus.NOT_STARTED.value)
+
+    def __str__(self):
+        return f"{self.user.username} enrolled in {self.course.title} on {self.enrollment_date}"
+
 
 admin.site.register(Profile)
 admin.site.register(Permission)
