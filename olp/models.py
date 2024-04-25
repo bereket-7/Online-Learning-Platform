@@ -44,7 +44,7 @@ class Course(models.Model):
     def __str__(self):
         return self.title
     
-class Lesson(models.Model):
+class Lessons(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     content = models.TextField()
@@ -57,3 +57,5 @@ class Lesson(models.Model):
 admin.site.register(Profile)
 admin.site.register(Permission)
 admin.site.register(Role)
+admin.site.register(Course)
+admin.site.register(Lessons)
