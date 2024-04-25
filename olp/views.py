@@ -13,9 +13,16 @@ from django.views import View
 from .forms.registration_form import CustomUserCreationForm 
 
 
-class ProfileView(View):
+# class ProfileView(View):
+#     def get(self, request):
+#         return render(request, 'account/profile.html')
+    
+class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'account/profile.html')
+        user = request.user
+        print(f"Current User: {user.username}")  # Debugging line
+        context = {'user': user}
+        return render(request, 'account/profile.html', context)
 
 class HomePageView(View):
     def get(self, request):
@@ -25,6 +32,11 @@ class CustomLoginView(LoginView):
     template_name = 'account/login.html'
     fields = '__all__'
     redirect_authenticated_user = True
+
+    def form_valid(self, form):
+        user = form.get_user()
+        login(self.request, user)
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy('profile')
