@@ -79,6 +79,16 @@ class Resource(models.Model):
     def __str__(self):
         return self.title
     
+
+class Quiz(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+    
     
 admin.site.register(Profile)
 admin.site.register(Permission)
@@ -86,3 +96,5 @@ admin.site.register(Role)
 admin.site.register(Course)
 admin.site.register(Lessons)
 admin.site.register(Enrollment)
+admin.site.register(Resource)
+admin.site.register(Quiz)
