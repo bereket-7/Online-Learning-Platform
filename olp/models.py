@@ -69,9 +69,20 @@ class Enrollment(models.Model):
     def __str__(self):
         return f"{self.user.username} enrolled in {self.course.title} on {self.enrollment_date}"
 
+class Resource(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to='resources/', blank=True, null=True)
+    link = models.URLField(blank=True, null=True)
+    description = models.TextField()
 
+    def __str__(self):
+        return self.title
+    
+    
 admin.site.register(Profile)
 admin.site.register(Permission)
 admin.site.register(Role)
 admin.site.register(Course)
 admin.site.register(Lessons)
+admin.site.register(Enrollment)
