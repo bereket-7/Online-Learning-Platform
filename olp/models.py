@@ -1,10 +1,11 @@
 # Create your models here.
+from enum import Enum
 from django import forms
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
 
-from enums import EnrollmentStatus
+from .enums import EnrollmentStatus
 
 from Online_Learning_Platform import settings
 
@@ -55,10 +56,24 @@ class Lessons(models.Model):
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
-
+class EnrollmentStatus(Enum):
+    NOT_STARTED = 'Not Started'
+    IN_PROGRESS = 'In Progress'
+    COMPLETED = 'Completed'
 class Enrollment(models.Model):
+    """
+    An enrollment represents a user's registration for a course.
+
+    Attributes:
+        user (ForeignKey): The user who is enrolled in the course.
+        course (ForeignKey): The course the user is enrolled in.
+        enrollment_date (DateTimeField): The date and time the user enrolled in the course.
+        completion_status (CharField): The status of the user's completion of the course.
+    """
     STATUS_CHOICES = [
-        (status.value, status.name) for status in EnrollmentStatus
+        (EnrollmentStatus.NOT_STARTED.name, 'Not Started'),
+        (EnrollmentStatus.IN_PROGRESS.name, 'In Progress'),
+        (EnrollmentStatus.COMPLETED.name, 'Completed')
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
@@ -67,7 +82,13 @@ class Enrollment(models.Model):
     completion_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=EnrollmentStatus.NOT_STARTED.value)
 
     def __str__(self):
+        """
+        Returns a string representing the user's enrollment in the course.
+        """
         return f"{self.user.username} enrolled in {self.course.title} on {self.enrollment_date}"
+
+
+
 
 class Resource(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -112,3 +133,5 @@ admin.site.register(Lessons)
 admin.site.register(Enrollment)
 admin.site.register(Resource)
 admin.site.register(Quiz)
+admin.site.register(Question)
+admin.site.register(Choice)
