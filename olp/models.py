@@ -5,7 +5,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
 
-from .enums import EnrollmentStatus
+from .enums import EnrollmentStatus, OrderStatus
+
 
 from Online_Learning_Platform import settings
 
@@ -147,6 +148,13 @@ class Category(models.Model):
     def __str__(self):
         return self.name
     
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders'),
+    course = models.ForeignKey(Course, on_delete=models.CASCADE),
+    transaction_id = models.CharField(max_length=255),
+    created_at = models.DateTimeField(auto_now_add=True),
+    status = models.CharField(max_length=20)
+    
 admin.site.register(Profile)
 admin.site.register(Permission)
 admin.site.register(Role)
@@ -157,3 +165,7 @@ admin.site.register(Resource)
 admin.site.register(Quiz)
 admin.site.register(Question)
 admin.site.register(Choice)
+admin.site.register(Order)
+admin.site.register(Category)
+admin.site.register(Tag)
+admin.site.register(Review)
