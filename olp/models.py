@@ -1,4 +1,3 @@
-# Create your models here.
 from enum import Enum
 from django import forms
 from django.db import models
@@ -6,8 +5,6 @@ from django.contrib.auth.models import User
 from django.contrib import admin
 
 from .enums import EnrollmentStatus, OrderStatus
-
-
 from Online_Learning_Platform import settings
 
 
@@ -116,7 +113,7 @@ class Question(models.Model):
     order = models.PositiveIntegerField()
 
     def __str__(self):
-        return self.text[:50]  # Return first 50 characters of the question text
+        return self.text[:50]
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -155,6 +152,18 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True),
     status = models.CharField(max_length=20)
     
+    def __str__(self):
+        return f"Order #{self.id} - {self.user} - {self.course}"
+    
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.user.username} - {self.created_at}"
+    
 admin.site.register(Profile)
 admin.site.register(Permission)
 admin.site.register(Role)
@@ -169,3 +178,4 @@ admin.site.register(Order)
 admin.site.register(Category)
 admin.site.register(Tag)
 admin.site.register(Review)
+admin.site.register(Notification)

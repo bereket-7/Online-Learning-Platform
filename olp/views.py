@@ -20,7 +20,7 @@ from .forms.registration_form import CustomUserCreationForm
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
-        print(f"Current User: {user.username}")  # Debugging line
+        print(f"Current User: {user.username}")
         context = {'user': user}
         return render(request, 'account/profile.html', context)
 
