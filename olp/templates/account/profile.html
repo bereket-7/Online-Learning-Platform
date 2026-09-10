@@ -1,9 +1,18 @@
-{% extends 'base.html' %} {% block content %}
-<h1>Welcome {{ user.username }}</h1>
-<p>Here you can see your personal information.</p>
-<a href="{% url 'home' %}">Home</a>
+{% extends 'base.html' %}
 
+{% block content %}
+<a href="{% url 'home' %}">Home</a>
+<h1>Welcome {{ user.username }}</h1>
+{% if profile %}
+    <p>Phone: {{ profile.phone }}</p>
+    <p>Field: {{ profile.field }}</p>
+    <p>Roles: {{ profile.get_roles|default:"—" }}</p>
+{% else %}
+    <p>No profile found for this account.</p>
+{% endif %}
 <a href="{% url 'change-password' %}">Change Password</a>
-<p>To logout, click on the following link:</p>
-<a href="{% url 'logout' %}">Logout</a>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>
 {% endblock %}
