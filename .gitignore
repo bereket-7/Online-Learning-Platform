@@ -3,6 +3,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Virtual environments
+dolp/
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+
 # Django
 *.log
 *.pot
@@ -11,6 +21,7 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 media/
+staticfiles/
 
 # VS Code
 .vscode/
