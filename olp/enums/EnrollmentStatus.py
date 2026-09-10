@@ -1,6 +1,3 @@
-from enum import Enum
+from olp.choices import EnrollmentStatus
 
-class EnrollmentStatus(Enum):
-    NOT_STARTED = 'Not Started'
-    IN_PROGRESS = 'In Progress'
-    COMPLETED = 'Completed'
+__all__ = ['EnrollmentStatus']
