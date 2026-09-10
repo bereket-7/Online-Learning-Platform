@@ -1,6 +1,3 @@
-from enum import Enum
+from olp.choices import OrderStatus
 
-class OrderStatus(Enum):
-    FAILED = 'Failed'
-    PENDING = 'Pending'
-    COMPLETED = 'Completed'
+__all__ = ['OrderStatus']
