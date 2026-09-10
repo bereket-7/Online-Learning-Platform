@@ -1,19 +1,17 @@
-from enum import Enum
-from django import forms
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
-from django.contrib import admin
 
-from .enums import EnrollmentStatus, OrderStatus
-from Online_Learning_Platform import settings
+from .choices import EnrollmentStatus, OrderStatus
 
 
 class Role(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
+    permissions = models.ManyToManyField('Permission', blank=True, related_name='roles')
 
     def __str__(self):
         return self.name
+
 
 class Permission(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -22,160 +20,214 @@ class Permission(models.Model):
     def __str__(self):
         return self.name
 
+
 class Profile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profile',
+    )
     phone = models.CharField(max_length=15)
     field = models.CharField(max_length=50)
     photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
-    roles = models.ManyToManyField(Role, blank=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    roles = models.ManyToManyField(Role, blank=True, related_name='profiles')
+
+    def __str__(self):
+        return self.user.get_username()
+
     @property
     def get_roles(self):
-        return ", ".join([role.name for role in self.roles.all()])
+        return ', '.join(role.name for role in self.roles.all())
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught')
+    instructor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='courses_taught',
+    )
     price = models.DecimalField(max_digits=6, decimal_places=2)
+    categories = models.ManyToManyField(Category, blank=True, related_name='courses')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='courses')
+    published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
-    
-class Lessons(models.Model):
+
+
+class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     content = models.TextField()
     video_url = models.URLField(blank=True, null=True)
     order = models.PositiveIntegerField()
 
-    def __str__(self):
-        return f"{self.course.title} - {self.title}"
-class EnrollmentStatus(Enum):
-    NOT_STARTED = 'Not Started'
-    IN_PROGRESS = 'In Progress'
-    COMPLETED = 'Completed'
-class Enrollment(models.Model):
-    """
-    An enrollment represents a user's registration for a course.
+    class Meta:
+        ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['course', 'order'],
+                name='unique_lesson_order_per_course',
+            ),
+        ]
 
-    Attributes:
-        user (ForeignKey): The user who is enrolled in the course.
-        course (ForeignKey): The course the user is enrolled in.
-        enrollment_date (DateTimeField): The date and time the user enrolled in the course.
-        completion_status (CharField): The status of the user's completion of the course.
-    """
-    STATUS_CHOICES = [
-        (EnrollmentStatus.NOT_STARTED.name, 'Not Started'),
-        (EnrollmentStatus.IN_PROGRESS.name, 'In Progress'),
-        (EnrollmentStatus.COMPLETED.name, 'Completed')
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+    def __str__(self):
+        return f'{self.course.title} - {self.title}'
+
+
+class Enrollment(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='enrollments',
+    )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     enrollment_date = models.DateTimeField(auto_now_add=True)
-    completion_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=EnrollmentStatus.NOT_STARTED.value)
+    completion_status = models.CharField(
+        max_length=20,
+        choices=EnrollmentStatus.choices,
+        default=EnrollmentStatus.NOT_STARTED,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'course'],
+                name='unique_enrollment_per_user_course',
+            ),
+        ]
 
     def __str__(self):
-        """
-        Returns a string representing the user's enrollment in the course.
-        """
-        return f"{self.user.username} enrolled in {self.course.title} on {self.enrollment_date}"
-
-
+        return (
+            f'{self.user} enrolled in {self.course.title} '
+            f'on {self.enrollment_date}'
+        )
 
 
 class Resource(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to='resources/', blank=True, null=True)
     link = models.URLField(blank=True, null=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
-    
+
 
 class Quiz(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='quizzes')
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+
+
 class Question(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['quiz', 'order'],
+                name='unique_question_order_per_quiz',
+            ),
+        ]
 
     def __str__(self):
         return self.text[:50]
 
+
 class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     text = models.CharField(max_length=255)
-    is_correct = models.BooleanField()
+    is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return self.text
-    
+
+
 class Review(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+    )
     rating = models.PositiveIntegerField(choices=[(i, str(i)) for i in range(1, 6)])
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Review by {self.user.username} for {self.course.title}"
-
-class Tag(models.Model):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-    
-class Category(models.Model):
-    name = models.CharField(max_length=255)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'course'],
+                name='unique_review_per_user_course',
+            ),
+        ]
 
     def __str__(self):
-        return self.name
-    
+        return f'Review by {self.user} for {self.course.title}'
+
+
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders'),
-    course = models.ForeignKey(Course, on_delete=models.CASCADE),
-    transaction_id = models.CharField(max_length=255),
-    created_at = models.DateTimeField(auto_now_add=True),
-    status = models.CharField(max_length=20)
-    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='orders',
+    )
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='orders')
+    transaction_id = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=OrderStatus.choices,
+        default=OrderStatus.PENDING,
+    )
+
     def __str__(self):
-        return f"Order #{self.id} - {self.user} - {self.course}"
-    
+        return f'Order #{self.pk} - {self.user} - {self.course}'
+
+
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+    )
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
-        return f"Notification for {self.user.username} - {self.created_at}"
-    
-admin.site.register(Profile)
-admin.site.register(Permission)
-admin.site.register(Role)
-admin.site.register(Course)
-admin.site.register(Lessons)
-admin.site.register(Enrollment)
-admin.site.register(Resource)
-admin.site.register(Quiz)
-admin.site.register(Question)
-admin.site.register(Choice)
-admin.site.register(Order)
-admin.site.register(Category)
-admin.site.register(Tag)
-admin.site.register(Review)
-admin.site.register(Notification)
+        return f'Notification for {self.user} - {self.created_at}'
+
+
+# Keep the old name importable for any leftover references during migration rename.
+Lessons = Lesson
